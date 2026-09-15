@@ -5,19 +5,20 @@
   "description": "MCP server para dados orgânicos + pagos do Meta Business (Facebook Pages e Instagram) via Graph API, com agregação cross-account do portfólio.",
   "type": "module",
   "bin": {
-    "meta-business-insights-mcp": "dist/index.js"
+    "meta-business-insights-mcp": "dist/bin/stdio.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc",
     "dev": "tsc --watch",
-    "start": "node dist/index.js",
-    "start:http": "node dist/http.js",
+    "start": "node dist/bin/stdio.js",
+    "start:http": "node dist/bin/http.js",
     "typecheck": "tsc --noEmit",
-    "probe": "node dist/probe.js",
-    "snapshot": "node dist/snapshot-cli.js"
+    "probe": "node dist/bin/probe.js",
+    "snapshot": "node dist/bin/snapshot.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

@@ -3,6 +3,29 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não publicado]
+
+### Alterado
+
+- **`src/` reorganizado em camadas**: `bin/` (entrypoints), `tools/` (uma tool
+  por arquivo), `meta/` (Graph API e domínio), `http/` (transporte e
+  autenticação), `storage/` e `lib/`. O `server.ts` caiu de 1046 para ~60
+  linhas e agora só registra os grupos de tools. Nenhuma tool mudou de nome,
+  schema ou saída.
+
+### Atenção no deploy
+
+- **Os caminhos do build mudaram**: `dist/index.js` → `dist/bin/stdio.js`,
+  `dist/http.js` → `dist/bin/http.js`, `dist/snapshot-cli.js` →
+  `dist/bin/snapshot.js`. Os units em `deploy/` já vêm corrigidos, mas na VPS é
+  preciso copiá-los de novo e rodar `systemctl daemon-reload` — sem isso o
+  serviço sobe apontando para um arquivo que não existe mais.
+- **Quem usa o modo stdio** precisa atualizar o `claude_desktop_config.json`
+  para `dist/bin/stdio.js`.
+- **`npm run build` agora apaga o `dist/` antes de compilar.** Sem isso os
+  arquivos dos caminhos antigos continuariam lá, servindo código velho sem
+  nenhum sintoma.
+
 ## [0.2.0] — 2026-08-11
 
 Instalar o conector deixou de exigir Node na máquina de cada pessoa, e passou a

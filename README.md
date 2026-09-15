@@ -90,10 +90,28 @@ Token e puxa 4 meses de seguidores como amostra.
 
 | Modo | Entrypoint | Quando usar |
 | --- | --- | --- |
-| stdio | `dist/index.js` | Só você. O Claude Desktop sobe o processo local; o token do Meta fica na sua máquina |
-| HTTP | `dist/http.js` | A equipe inteira. O servidor roda numa VPS e o token do Meta nunca sai de lá |
+| stdio | `dist/bin/stdio.js` | Só você. O Claude Desktop sobe o processo local; o token do Meta fica na sua máquina |
+| HTTP | `dist/bin/http.js` | A equipe inteira. O servidor roda numa VPS e o token do Meta nunca sai de lá |
 
 O servidor MCP é o mesmo nos dois — muda só quem o serve.
+
+## Estrutura do projeto
+
+```
+src/
+  bin/       entrypoints: stdio, http, probe e o snapshot de linha de comando
+  server.ts  monta o servidor MCP e registra os grupos de tools
+  tools/     uma tool (ou grupo) por arquivo, mais os schemas e o formato das respostas
+  meta/      tudo que fala com a Graph API: cliente, portfólio, insights, conteúdo
+  http/      transporte HTTP, bearers, authorization server e login Google
+  storage/   histórico de seguidores em disco
+  lib/       datas e formatação de tabelas
+  config.ts  variáveis de ambiente, validadas no boot
+```
+
+Para acrescentar uma tool, crie o arquivo em `tools/` e chame o `register…` em
+`server.ts`. As dependências (cliente da Graph API, portfólio, store) chegam
+prontas pelo parâmetro `ToolDeps`.
 
 ## Configuração no Claude Desktop (modo stdio)
 
@@ -104,7 +122,7 @@ O servidor MCP é o mesmo nos dois — muda só quem o serve.
   "mcpServers": {
     "meta-business-insights": {
       "command": "node",
-      "args": ["/caminho/para/meta-business-insights-mcp/dist/index.js"],
+      "args": ["/caminho/para/meta-business-insights-mcp/dist/bin/stdio.js"],
       "env": {
         "META_ACCESS_TOKEN": "SEU_TOKEN",
         "META_BUSINESS_ID": "SEU_BUSINESS_ID"
@@ -248,7 +266,7 @@ curl -X POST https://mcp.exemplo.com/mcp \
 
 A janela "Add custom connector" do Claude não tem campo para bearer fixo — só
 para credenciais de OAuth. Por isso o servidor traz um authorization server
-próprio, em [src/oauth.ts](src/oauth.ts), com o Google como identidade.
+próprio, em [src/http/oauth.ts](src/http/oauth.ts), com o Google como identidade.
 
 Ele **não** fala com a Graph API e não decide o que a pessoa alcança no Meta: o
 `META_ACCESS_TOKEN` continua sendo um só, aqui na VPS. O Google entra uma vez,
@@ -515,7 +533,7 @@ Assim cada ajuste de tom não vira deploy do servidor.
 ## Métricas descontinuadas
 
 O Meta desligou `page_fans` e toda a família `impressions` em 15/11/2025, e outra leva
-cai em 15/06/2026. O catálogo em `src/metrics.ts` mapeia antiga → substituta
+cai em 15/06/2026. O catálogo em `src/meta/metrics.ts` mapeia antiga → substituta
 (`page_fans` → `page_follows`, `page_impressions` → `page_media_view`,
 `impressions` do Instagram → `views`), e as tools avisam quando você pede uma métrica
 morta em vez de devolver um erro `#100` sem contexto.
