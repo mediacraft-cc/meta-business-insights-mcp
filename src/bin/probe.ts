@@ -5,11 +5,11 @@
  * confirmar permissões antes de plugar o servidor no Claude.
  */
 
-import { loadConfig } from "./config.js";
-import { GraphClient } from "./graph/client.js";
-import { PortfolioService } from "./graph/assets.js";
-import { fetchFollowerSeries } from "./followers.js";
-import { addDays, today } from "./dates.js";
+import { loadConfig } from "../config.js";
+import { GraphClient } from "../meta/client.js";
+import { PortfolioService } from "../meta/assets.js";
+import { fetchFollowerSeries } from "../meta/followers.js";
+import { addDays, today } from "../lib/dates.js";
 
 const config = loadConfig();
 const client = new GraphClient(config.accessToken, config.apiVersion);

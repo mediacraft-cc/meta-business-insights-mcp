@@ -1,9 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
-import { fetchFollowerSeries } from "../followers.js";
-import { resolveRange, today, type Granularity } from "../dates.js";
-import { formatPct, formatSigned, issuesBlock, markdownTable, section } from "../format.js";
+import { fetchFollowerSeries } from "../meta/followers.js";
+import { resolveRange, today, type Granularity } from "../lib/dates.js";
+import { formatPct, formatSigned, issuesBlock, markdownTable, section } from "../lib/format.js";
 import {
   assetsSchema,
   fail,

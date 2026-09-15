@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
-import { fetchContent } from "../content.js";
-import { resolveRange } from "../dates.js";
-import { MS_METRICS } from "../metrics.js";
-import { issuesBlock, markdownTable } from "../format.js";
+import { fetchContent } from "../meta/content.js";
+import { resolveRange } from "../lib/dates.js";
+import { MS_METRICS } from "../meta/metrics.js";
+import { issuesBlock, markdownTable } from "../lib/format.js";
 import { assetsSchema, fail, sinceSchema, text, untilSchema, type ToolDeps } from "./shared.js";
 
 /**

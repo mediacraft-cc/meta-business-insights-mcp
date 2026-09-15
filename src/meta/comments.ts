@@ -11,9 +11,9 @@
  * devolve o `username`. Por isso o campo `author` é opcional aqui.
  */
 
-import type { GraphClient } from "./graph/client.js";
-import type { PageAsset } from "./graph/assets.js";
-import { addDays, unix } from "./dates.js";
+import type { GraphClient } from "./client.js";
+import type { PageAsset } from "./assets.js";
+import { addDays, unix } from "../lib/dates.js";
 import type { Surface } from "./content.js";
 
 export interface CommentRow {

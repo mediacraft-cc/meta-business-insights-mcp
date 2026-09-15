@@ -255,7 +255,7 @@ export class AuthorizationServer {
     if (removed > 0) log(`${removed} sessão(ões) descartada(s): fora da allowlist`);
   }
 
-  /** Documento RFC 8414, servido pelo helper do SDK em `http.ts`. */
+  /** Documento RFC 8414, servido pelo helper do SDK em `bin/http.ts`. */
   metadata(): OAuthMetadata {
     return {
       issuer: this.config.issuer,
@@ -277,7 +277,7 @@ export class AuthorizationServer {
   }
 
   /**
-   * Verificador do `/mcp` para sessões OAuth. `http.ts` encadeia este com o de
+   * Verificador do `/mcp` para sessões OAuth. `bin/http.ts` encadeia este com o de
    * bearer estático, que segue valendo como saída de emergência.
    */
   verifyAccessToken = async (token: string): Promise<AuthInfo> => {
@@ -307,7 +307,7 @@ export class AuthorizationServer {
 
   /**
    * Roteia as rotas do AS. Devolve `undefined` quando o caminho não é dele,
-   * para `http.ts` seguir com o roteamento normal.
+   * para `bin/http.ts` seguir com o roteamento normal.
    */
   async handle(request: Request, url: URL): Promise<Response | undefined> {
     if (url.pathname === "/register") {

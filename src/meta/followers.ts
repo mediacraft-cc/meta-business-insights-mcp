@@ -14,8 +14,8 @@
  * usuário pede um intervalo que termina no passado.
  */
 
-import type { GraphClient } from "./graph/client.js";
-import type { PageAsset } from "./graph/assets.js";
+import type { GraphClient } from "./client.js";
+import type { PageAsset } from "./assets.js";
 import {
   addDays,
   buildBuckets,
@@ -24,8 +24,8 @@ import {
   unix,
   type Bucket,
   type Granularity,
-} from "./dates.js";
-import { IG_MAX_WINDOW_DAYS, PAGE_MAX_WINDOW_DAYS, type FetchIssue } from "./graph/insights.js";
+} from "../lib/dates.js";
+import { IG_MAX_WINDOW_DAYS, PAGE_MAX_WINDOW_DAYS, type FetchIssue } from "./insights.js";
 
 export interface FollowerRow {
   period: string;

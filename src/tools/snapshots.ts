@@ -1,8 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
-import { captureSnapshot } from "../snapshot.js";
-import { markdownTable } from "../format.js";
+import { captureSnapshot } from "../storage/snapshot.js";
+import { markdownTable } from "../lib/format.js";
 import { assetsSchema, fail, sinceSchema, text, untilSchema, type ToolDeps } from "./shared.js";
 
 export function registerSnapshotTools(server: McpServer, { portfolio, store }: ToolDeps): void {

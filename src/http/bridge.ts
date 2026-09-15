@@ -1,7 +1,7 @@
 /**
  * Ponte entre o `http` do Node e o handler web-standard do SDK.
  *
- * Usada por `http.ts`. O SDK expõe `handler.fetch(Request) => Response`; o Node fala
+ * Usada por `bin/http.ts`. O SDK expõe `handler.fetch(Request) => Response`; o Node fala
  * `(IncomingMessage, ServerResponse)`. O pacote oficial
  * `@modelcontextprotocol/node` faz essa conversão, mas arrasta o Hono junto —
  * caro demais para as ~40 linhas abaixo.

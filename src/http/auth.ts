@@ -141,7 +141,7 @@ export function parseAllowedEmails(raw: string | undefined): AllowedUser[] {
  * tempo de resposta, e comparar comprimentos vazaria o tamanho.
  *
  * Lista vazia é aceita — significa "sem saída de emergência", e quem garante
- * que o servidor não ficou aberto é a checagem em `http.ts`, que exige pelo
+ * que o servidor não ficou aberto é a checagem em `bin/http.ts`, que exige pelo
  * menos um dos dois caminhos de autenticação configurado.
  */
 export function createStaticTokenVerifier(tokens: StaticToken[]) {
