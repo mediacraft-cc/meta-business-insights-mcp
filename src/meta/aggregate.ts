@@ -4,8 +4,8 @@
  * por breakdown — em qualquer combinação).
  */
 
-import type { MetricSeries } from "./graph/insights.js";
-import { bucketLabel, type Granularity } from "./dates.js";
+import type { MetricSeries } from "./insights.js";
+import { bucketLabel, type Granularity } from "../lib/dates.js";
 
 export type Aggregation = "sum" | "avg" | "max" | "min" | "last";
 export type GroupDimension = "period" | "asset" | "surface" | "metric" | "breakdown";

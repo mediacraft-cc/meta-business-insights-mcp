@@ -6,10 +6,10 @@
 import * as z from "zod/v4";
 
 import type { Config } from "../config.js";
-import { redactDeep, redactText } from "../redact.js";
-import { GraphError, type GraphClient } from "../graph/client.js";
-import type { PageAsset, PortfolioService } from "../graph/assets.js";
-import type { SnapshotStore } from "../store.js";
+import { redactDeep, redactText } from "../lib/redact.js";
+import { GraphError, type GraphClient } from "../meta/client.js";
+import type { PageAsset, PortfolioService } from "../meta/assets.js";
+import type { SnapshotStore } from "../storage/store.js";
 
 /**
  * Criadas uma vez por processo em `server.ts`. O HTTP monta um servidor por

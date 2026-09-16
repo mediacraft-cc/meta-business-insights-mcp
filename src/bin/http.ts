@@ -4,7 +4,7 @@
  *
  * O token do Meta fica só aqui, na VPS — quem consulta manda apenas o próprio
  * bearer. É a diferença que justifica este modo em vez de distribuir o `.env`
- * para todo mundo (veja `index.ts` para o modo stdio local).
+ * para todo mundo (veja `bin/stdio.ts` para o modo stdio local).
  *
  * O processo escuta em 127.0.0.1 por padrão: quem termina o TLS e expõe para
  * fora é o reverse proxy (veja `deploy/`). Abrir direto na internet sem TLS
@@ -22,12 +22,12 @@ import {
   type AuthInfo,
 } from "@modelcontextprotocol/server";
 
-import { loadConfig } from "./config.js";
-import { createServer } from "./server.js";
-import { createStaticTokenVerifier, parseAllowedEmails, parseTokens } from "./auth.js";
-import { PayloadTooLargeError, toWebRequest, writeNodeResponse } from "./http-bridge.js";
-import { loadGoogleConfig } from "./google.js";
-import { AuthorizationServer, loadOAuthConfig } from "./oauth.js";
+import { loadConfig } from "../config.js";
+import { createServer } from "../server.js";
+import { createStaticTokenVerifier, parseAllowedEmails, parseTokens } from "../http/auth.js";
+import { PayloadTooLargeError, toWebRequest, writeNodeResponse } from "../http/bridge.js";
+import { loadGoogleConfig } from "../http/google.js";
+import { AuthorizationServer, loadOAuthConfig } from "../http/oauth.js";
 
 const port = Number(process.env.MCP_HTTP_PORT ?? 8787);
 const host = process.env.MCP_HTTP_HOST?.trim() || "127.0.0.1";

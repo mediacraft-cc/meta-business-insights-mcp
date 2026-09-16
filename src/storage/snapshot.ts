@@ -6,9 +6,9 @@
  * dentro do handler da tool, o cron precisaria falar MCP para chamá-la.
  */
 
-import type { PortfolioService } from "./graph/assets.js";
+import type { PortfolioService } from "../meta/assets.js";
 import type { SnapshotStore, Snapshot } from "./store.js";
-import { today } from "./dates.js";
+import { today } from "../lib/dates.js";
 
 export interface CaptureOptions {
   /** IDs, nomes ou @usuario. Vazio = portfólio inteiro. */

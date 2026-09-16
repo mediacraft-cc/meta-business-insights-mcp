@@ -1,7 +1,7 @@
 /**
  * Ponte entre o `http` do Node e o handler web-standard do SDK.
  *
- * Usada por `http.ts`. O SDK expõe `handler.fetch(Request) => Response`; o Node fala
+ * Usada por `bin/http.ts`. O SDK expõe `handler.fetch(Request) => Response`; o Node fala
  * `(IncomingMessage, ServerResponse)`. O pacote oficial
  * `@modelcontextprotocol/node` faz essa conversão, mas arrasta o Hono junto —
  * caro demais para as ~40 linhas abaixo.
@@ -30,7 +30,7 @@ const BODYLESS = new Set(["GET", "HEAD"]);
  */
 const MAX_BODY_BYTES = 1024 * 1024;
 
-/** Corpo acima do teto; `http.ts` traduz para 413. */
+/** Corpo acima do teto; `bin/http.ts` traduz para 413. */
 export class PayloadTooLargeError extends Error {
   constructor() {
     super("Corpo da requisição excede o limite.");

@@ -14,8 +14,8 @@
 import type { GraphClient } from "./client.js";
 import { GraphError } from "./client.js";
 import type { PageAsset } from "./assets.js";
-import { addDays, buildBuckets, chunkRange, unix, type Granularity } from "../dates.js";
-import { IG_REQUIRES_TIMEFRAME, IG_TIME_SERIES_METRICS } from "../metrics.js";
+import { addDays, buildBuckets, chunkRange, unix, type Granularity } from "../lib/dates.js";
+import { IG_REQUIRES_TIMEFRAME, IG_TIME_SERIES_METRICS } from "./metrics.js";
 
 type BatchOutcome = {
   results: Array<

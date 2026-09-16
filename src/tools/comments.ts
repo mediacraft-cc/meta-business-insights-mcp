@@ -1,9 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
-import { fetchComments } from "../comments.js";
-import { resolveRange } from "../dates.js";
-import { issuesBlock, markdownTable } from "../format.js";
+import { fetchComments } from "../meta/comments.js";
+import { resolveRange } from "../lib/dates.js";
+import { issuesBlock, markdownTable } from "../lib/format.js";
 import {
   assetLine,
   assetsSchema,

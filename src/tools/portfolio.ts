@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
-import { issuesBlock, markdownTable } from "../format.js";
+import { issuesBlock, markdownTable } from "../lib/format.js";
 import { assetLine, fail, sum, text, type ToolDeps } from "./shared.js";
 
 export function registerPortfolioTools(server: McpServer, { portfolio }: ToolDeps): void {

@@ -12,10 +12,10 @@
  * só. Onde a tradução não é exata, o comentário no código diz o que foi feito.
  */
 
-import type { GraphClient } from "./graph/client.js";
-import type { PageAsset } from "./graph/assets.js";
+import type { GraphClient } from "./client.js";
+import type { PageAsset } from "./assets.js";
 import { FB_POST_METRICS, igMediaMetricsFor } from "./metrics.js";
-import { addDays, unix } from "./dates.js";
+import { addDays, unix } from "../lib/dates.js";
 
 export type Surface = "facebook" | "instagram";
 

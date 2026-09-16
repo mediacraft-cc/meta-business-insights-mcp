@@ -7,14 +7,14 @@
  * de `follower_count` do Instagram é de 30 dias — o que não for capturado nesse
  * intervalo não existe em lugar nenhum depois.
  *
- * Uso: node dist/snapshot-cli.js [--date YYYY-MM-DD] [--assets a,b,c]
+ * Uso: node dist/bin/snapshot.js [--date YYYY-MM-DD] [--assets a,b,c]
  */
 
-import { loadConfig } from "./config.js";
-import { GraphClient } from "./graph/client.js";
-import { PortfolioService } from "./graph/assets.js";
-import { SnapshotStore } from "./store.js";
-import { captureSnapshot } from "./snapshot.js";
+import { loadConfig } from "../config.js";
+import { GraphClient } from "../meta/client.js";
+import { PortfolioService } from "../meta/assets.js";
+import { SnapshotStore } from "../storage/store.js";
+import { captureSnapshot } from "../storage/snapshot.js";
 
 function flag(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);

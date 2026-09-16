@@ -6,16 +6,16 @@
  * portfólio, com os números reais das contas.
  *
  * Este módulo só monta o servidor; cada grupo de tools vive em `tools/`. Quem
- * o serve são os entrypoints: `index.ts` (stdio, execução local) e `http.ts`
+ * o serve são os entrypoints: `bin/stdio.ts` (stdio, execução local) e `bin/http.ts`
  * (remoto, atrás de bearer).
  */
 
 import { McpServer } from "@modelcontextprotocol/server";
 
 import { loadConfig } from "./config.js";
-import { GraphClient } from "./graph/client.js";
-import { PortfolioService } from "./graph/assets.js";
-import { SnapshotStore } from "./store.js";
+import { GraphClient } from "./meta/client.js";
+import { PortfolioService } from "./meta/assets.js";
+import { SnapshotStore } from "./storage/store.js";
 import type { ToolDeps } from "./tools/shared.js";
 import { registerPortfolioTools } from "./tools/portfolio.js";
 import { registerFollowerTools } from "./tools/followers.js";

@@ -6,11 +6,11 @@ import {
   fetchPageInsights,
   type FetchIssue,
   type MetricSeries,
-} from "../graph/insights.js";
-import { aggregate, withDeltas, type GroupDimension } from "../aggregate.js";
-import { resolveRange, type Granularity } from "../dates.js";
-import { IG_METRICS, PAGE_DEPRECATIONS, PAGE_METRICS, checkDeprecated } from "../metrics.js";
-import { formatPct, formatSigned, issuesBlock, markdownTable, section } from "../format.js";
+} from "../meta/insights.js";
+import { aggregate, withDeltas, type GroupDimension } from "../meta/aggregate.js";
+import { resolveRange, type Granularity } from "../lib/dates.js";
+import { IG_METRICS, PAGE_DEPRECATIONS, PAGE_METRICS, checkDeprecated } from "../meta/metrics.js";
+import { formatPct, formatSigned, issuesBlock, markdownTable, section } from "../lib/format.js";
 import {
   assetsSchema,
   fail,
