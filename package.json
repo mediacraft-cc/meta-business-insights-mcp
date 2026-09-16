@@ -17,6 +17,7 @@
     "start": "node dist/bin/stdio.js",
     "start:http": "node dist/bin/http.js",
     "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test \"dist/**/*.test.js\"",
     "probe": "node dist/bin/probe.js",
     "snapshot": "node dist/bin/snapshot.js"
   },

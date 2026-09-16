@@ -115,6 +115,20 @@ prontas pelo parâmetro `ToolDeps`. Toda resposta sai por `text()` ou `fail()`,
 em `tools/shared.ts` — é ali que a redação de token acontece, então uma tool
 nova não precisa lembrar disso.
 
+## Testes
+
+```bash
+npm test        # compila e roda os testes
+npm run typecheck
+```
+
+Os testes ficam ao lado do módulo que exercitam (`dates.test.ts` junto de
+`dates.ts`), usam o runner embutido do Node (`node:test`, sem dependência
+nova) e não tocam na rede: cobrem as janelas de data, a agregação
+cross-account, a formatação das tabelas, a redação de segredos, o catálogo de
+métricas e o histórico em disco. O que fala com a Graph API continua sendo
+verificado pelo `npm run probe`, que usa o token de verdade.
+
 ## Configuração no Claude Desktop (modo stdio)
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`:

@@ -5,6 +5,15 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Adicionado
+
+- **Testes** (`npm test`) com o runner embutido do Node, sem dependência nova:
+  47 casos sobre janelas de data, agregação cross-account, formatação de
+  tabelas, redação de segredos, catálogo de métricas e histórico em disco.
+  Nenhum toca na rede. Os da redação fixam o comportamento que o 0.2.1
+  introduziu: token na query string, token solto no texto, chave secreta em
+  qualquer nível e a URL de `paging.next`, que era por onde ele vazava.
+
 ### Alterado
 
 - **`src/` reorganizado em camadas**: `bin/` (entrypoints), `tools/` (uma tool
