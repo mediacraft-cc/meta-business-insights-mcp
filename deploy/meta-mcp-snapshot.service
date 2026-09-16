@@ -14,7 +14,7 @@ Type=oneshot
 User=mcp
 Group=mcp
 WorkingDirectory=/opt/meta-business-insights-mcp
-ExecStart=/usr/bin/node dist/snapshot-cli.js
+ExecStart=/usr/bin/node dist/bin/snapshot.js
 EnvironmentFile=/etc/meta-mcp.env
 
 # Mesmo diretório do serviço principal — os dois escrevem o mesmo arquivo de
