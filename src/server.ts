@@ -10,6 +10,8 @@
  * (remoto, atrás de bearer).
  */
 
+import { createRequire } from "node:module";
+
 import { McpServer } from "@modelcontextprotocol/server";
 
 import { loadConfig } from "./config.js";
@@ -24,6 +26,12 @@ import { registerContentTools } from "./tools/content.js";
 import { registerCommentTools } from "./tools/comments.js";
 import { registerSnapshotTools } from "./tools/snapshots.js";
 import { registerGraphApiTools } from "./tools/graph-api.js";
+
+// A versão do handshake sai do package.json: mantida à mão, ela envelhece sem
+// ninguém perceber (ficou em 0.1.2 enquanto o pacote já estava em 0.2.0).
+const { version } = createRequire(import.meta.url)("../package.json") as {
+  version: string;
+};
 
 // No nível do módulo de propósito: o HTTP chama `createServer` a cada request,
 // e o cache de 10 minutos do portfólio precisa sobreviver entre elas.
@@ -48,7 +56,7 @@ export interface ServerOptions {
 export function createServer(options: ServerOptions = {}): McpServer {
   const server = new McpServer({
     name: "meta-business-insights",
-    version: "0.1.2",
+    version,
   });
 
   registerPortfolioTools(server, deps);

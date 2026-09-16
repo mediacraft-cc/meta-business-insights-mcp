@@ -11,6 +11,11 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   39 casos sobre janelas de data, agregação cross-account, formatação de
   tabelas, catálogo de métricas e histórico em disco. Nenhum toca na rede.
 
+### Corrigido
+
+- **A versão do handshake MCP** vinha fixa em `0.1.2` enquanto o pacote já
+  estava em `0.2.0`. Agora sai do `package.json`.
+
 ### Alterado
 
 - **`src/` reorganizado em camadas**: `bin/` (entrypoints), `tools/` (uma tool
