@@ -14,6 +14,11 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   introduziu: token na query string, token solto no texto, chave secreta em
   qualquer nível e a URL de `paging.next`, que era por onde ele vazava.
 
+### Corrigido
+
+- **A versão do handshake MCP** vinha fixa em `0.1.2` enquanto o pacote já
+  estava em `0.2.2`. Agora sai do `package.json`.
+
 ### Alterado
 
 - **`src/` reorganizado em camadas**: `bin/` (entrypoints), `tools/` (uma tool
