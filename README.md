@@ -113,6 +113,20 @@ Para acrescentar uma tool, crie o arquivo em `tools/` e chame o `register…` em
 `server.ts`. As dependências (cliente da Graph API, portfólio, store) chegam
 prontas pelo parâmetro `ToolDeps`.
 
+## Testes
+
+```bash
+npm test        # compila e roda os testes
+npm run typecheck
+```
+
+Os testes ficam ao lado do módulo que exercitam (`dates.test.ts` junto de
+`dates.ts`), usam o runner embutido do Node (`node:test`, sem dependência
+nova) e não tocam na rede: cobrem as janelas de data, a agregação
+cross-account, a formatação das tabelas, o catálogo de métricas e o histórico
+em disco. O que fala com a Graph API continua sendo verificado pelo
+`npm run probe`, que usa o token de verdade.
+
 ## Configuração no Claude Desktop (modo stdio)
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`:

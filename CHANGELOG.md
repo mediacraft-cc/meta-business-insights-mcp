@@ -5,6 +5,12 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Adicionado
+
+- **Testes** (`npm test`) com o runner embutido do Node, sem dependência nova:
+  39 casos sobre janelas de data, agregação cross-account, formatação de
+  tabelas, catálogo de métricas e histórico em disco. Nenhum toca na rede.
+
 ### Alterado
 
 - **`src/` reorganizado em camadas**: `bin/` (entrypoints), `tools/` (uma tool
