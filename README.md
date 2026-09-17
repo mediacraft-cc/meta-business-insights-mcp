@@ -189,6 +189,34 @@ o portfólio por esquecimento.
 
 ### 2. Na VPS
 
+Três diretórios, porque são três ciclos de vida diferentes:
+
+| Onde | O quê | Dono e modo | Quem escreve |
+| --- | --- | --- | --- |
+| `/opt/meta-business-insights-mcp` | o código e o `dist/` | `root`, `755` | o `git pull` |
+| `/etc/meta-mcp.env` | as variáveis desta máquina | `root`, `600` | você, à mão |
+| `/var/lib/meta-mcp` | snapshots, sessões e clientes OAuth | `mcp`, criado pelo systemd (`755` por padrão) | o próprio serviço |
+| `/etc/systemd/system/meta-mcp*.{service,timer}` | como o serviço sobe | `root`, `644` | o `cp` de `deploy/` |
+
+A separação não é burocracia. Se o segredo morasse dentro de `/opt`, um
+`git clean -xdf` para destravar um build o apagaria, um `.gitignore` mal editado
+o commitaria, e um backup do diretório do código levaria o token junto — nada
+disso alcança `/etc`. E como o serviço roda como `mcp` enquanto o arquivo é de
+`root`, o processo exposto à internet não consegue ler a própria configuração:
+quem lê é o systemd, antes de baixar o privilégio.
+
+Esqueceu um caminho? O unit é o índice:
+
+```bash
+systemctl cat meta-mcp | grep -E "EnvironmentFile|WorkingDirectory|StateDirectory"
+stat -c '%a %U:%G' /etc/meta-mcp.env /var/lib/meta-mcp
+```
+
+O `StateDirectory` nasce legível por qualquer conta da máquina. Ali só ficam
+snapshots e *digests* de sessão — nenhum token utilizável —, mas se a VPS tiver
+mais gente com shell, `StateDirectoryMode=0700` no unit fecha isso sem efeito
+colateral.
+
 Conta de sistema sem login e sem home — o `useradd` do `shadow-utils` funciona
 tanto em Debian/Ubuntu quanto em RHEL/Alma/Rocky, ao contrário do `adduser`,
 que tem sintaxes diferentes em cada família:
