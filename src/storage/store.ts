@@ -40,7 +40,10 @@ export class SnapshotStore {
   private write(snapshots: Snapshot[]): void {
     mkdirSync(this.dataDir, { recursive: true });
     const tmp = `${this.file}.tmp`;
-    writeFileSync(tmp, JSON.stringify(snapshots, null, 2), "utf8");
+    // Mesmo 0600 dos arquivos de sessão, no mesmo diretório: o histórico é
+    // dado de cliente (quais contas, quantos seguidores, em que data) e o
+    // StateDirectory nasce legível por qualquer conta da máquina.
+    writeFileSync(tmp, JSON.stringify(snapshots, null, 2), { encoding: "utf8", mode: 0o600 });
     renameSync(tmp, this.file);
   }
 

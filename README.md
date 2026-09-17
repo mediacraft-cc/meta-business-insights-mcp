@@ -195,7 +195,7 @@ Três diretórios, porque são três ciclos de vida diferentes:
 | --- | --- | --- | --- |
 | `/opt/meta-business-insights-mcp` | o código e o `dist/` | `root`, `755` | o `git pull` |
 | `/etc/meta-mcp.env` | as variáveis desta máquina | `root`, `600` | você, à mão |
-| `/var/lib/meta-mcp` | snapshots, sessões e clientes OAuth | `mcp`, criado pelo systemd (`755` por padrão) | o próprio serviço |
+| `/var/lib/meta-mcp` | snapshots, sessões e clientes OAuth | `mcp`, `755` (o systemd cria) | o próprio serviço |
 | `/etc/systemd/system/meta-mcp*.{service,timer}` | como o serviço sobe | `root`, `644` | o `cp` de `deploy/` |
 
 A separação não é burocracia. Se o segredo morasse dentro de `/opt`, um
@@ -212,10 +212,10 @@ systemctl cat meta-mcp | grep -E "EnvironmentFile|WorkingDirectory|StateDirector
 stat -c '%a %U:%G' /etc/meta-mcp.env /var/lib/meta-mcp
 ```
 
-O `StateDirectory` nasce legível por qualquer conta da máquina. Ali só ficam
-snapshots e *digests* de sessão — nenhum token utilizável —, mas se a VPS tiver
-mais gente com shell, `StateDirectoryMode=0700` no unit fecha isso sem efeito
-colateral.
+O `StateDirectory` nasce em `755`, legível por qualquer conta da máquina — quem
+protege o conteúdo é o modo de cada arquivo, e os três são gravados em `600`.
+Se a VPS tiver outras contas com shell, `StateDirectoryMode=0700` no unit
+acrescenta a segunda camada, fechando também a listagem do diretório.
 
 Conta de sistema sem login e sem home — o `useradd` do `shadow-utils` funciona
 tanto em Debian/Ubuntu quanto em RHEL/Alma/Rocky, ao contrário do `adduser`,

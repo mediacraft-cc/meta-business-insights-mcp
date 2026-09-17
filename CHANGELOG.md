@@ -3,6 +3,43 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+
+- **Teste do modo de gravação do histórico**: confere que o
+  `follower-snapshots.json` sai em `0600` depois do `save`. Como o
+  `StateDirectory` é `755`, o modo do arquivo é o que decide quem lê — e uma
+  regressão aqui não tem sintoma nenhum, porque o servidor funciona igual com o
+  arquivo aberto. É o 48º caso da suíte.
+
+### Segurança
+
+- **O histórico de seguidores passou a ser gravado em `0600`.** O
+  `StateDirectory` da VPS nasce em `755`, então o modo do arquivo é o que decide
+  quem lê — e o `follower-snapshots.json` ficava em `644`, legível por qualquer
+  conta da máquina, com o portfólio inteiro dentro (quais contas, quantos
+  seguidores, em que data). Os arquivos de sessão do OAuth, no mesmo diretório,
+  já gravavam assim. Verificado na VPS. A correção se aplica sozinha na próxima
+  gravação, porque a escrita é atômica: o arquivo temporário nasce com o modo
+  certo e substitui o antigo.
+
+### Documentação
+
+- **Mapa dos diretórios da VPS** no README, no começo da seção de instalação:
+  código em `/opt` (`755 root`), variáveis em `/etc/meta-mcp.env`
+  (`600 root`), estado em `/var/lib/meta-mcp` (`755 mcp`) e os units em
+  `/etc/systemd/system`, cada um com dono, modo e quem escreve. Antes os três
+  caminhos apareciam espalhados pelo passo a passo, nunca lado a lado. Os
+  valores foram conferidos na VPS, não deduzidos do código.
+- Fica registrado por que o segredo mora longe do código: `git clean`,
+  `.gitignore` e backup do diretório do código não alcançam `/etc`, e o
+  processo que fala com a internet roda como `mcp` sem conseguir ler a própria
+  configuração — quem lê é o systemd, antes de baixar o privilégio.
+- **`StateDirectoryMode=0700`** registrado como camada opcional no unit. Com os
+  três arquivos de estado agora em `600`, ele fecharia apenas a listagem do
+  diretório; não foi aplicado.
+
 ## [0.3.0] — 2026-09-17
 
 ### Adicionado

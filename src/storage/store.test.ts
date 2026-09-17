@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
@@ -79,6 +79,17 @@ describe("SnapshotStore", () => {
       s.query().map((x) => x.date),
       ["2026-01-01", "2026-03-01"],
     );
+  });
+
+  /**
+   * O StateDirectory da VPS nasce em 0755, então o modo do arquivo é o que
+   * decide quem lê o histórico do portfólio. Os arquivos de sessão do OAuth, no
+   * mesmo diretório, já gravam assim.
+   */
+  it("grava o histórico legível só pelo dono", () => {
+    const s = store();
+    s.save([snap("2026-01-01", "a", 10)]);
+    assert.equal(statSync(s.path).mode & 0o777, 0o600);
   });
 
   /**
