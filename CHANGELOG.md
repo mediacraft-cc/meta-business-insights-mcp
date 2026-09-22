@@ -3,6 +3,28 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+
+- **O rate limit do Instagram (`80005`) não era reconhecido como rate limit.** A
+  lista em `isRateLimit` ia de `80000` a `80004` e parava ali — mas `80005` é o
+  balde do Instagram, e `80002`/`80003`/`80004` são Custom Audience e Ads
+  Management, que este servidor nem toca. Na prática, o throttle da superfície
+  mais pesada do projeto subia como erro permanente: sem backoff, sem retry, sem
+  as três tentativas que o Facebook ganhava no mesmo cenário. Como o token é um
+  só, o balde é por ativo e por caso de uso, então o gatilho realista é várias
+  pessoas consultando o mesmo cliente na mesma hora — e é justamente aí que a
+  espera fazia falta.
+
+### Adicionado
+
+- **Testes do classificador de erro da Graph API**: cobrem os dois baldes usados
+  (`80001` Pages, `80005` Instagram), os limites de plataforma e os erros que
+  **não** podem ser confundidos com limite — o `(#100)` de métrica inválida e o
+  `190` de token expirado repetem igual para sempre, e retentar só gasta a cota
+  que o backoff existe para poupar. São os casos 49 a 52 da suíte.
+
 ## [0.3.1] — 2026-09-17
 
 ### Adicionado

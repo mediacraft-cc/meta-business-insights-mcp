@@ -633,6 +633,11 @@ Tudo abaixo foi verificado contra a API real na v26, não só lido na documenta�
   falha, o servidor refaz aquela janela métrica a métrica: as válidas retornam
   normalmente e a inválida vira aviso.
 - Requests são agrupados em batches de 50 — o erro de uma conta não afeta as demais.
-- Rate limit (códigos 4, 17, 32, 613, 80000+) tem retry com backoff exponencial.
+- Rate limit tem retry com backoff exponencial. Os limites por caso de uso são
+  baldes separados por ativo — `80001` para Pages e `80005` para Instagram são os
+  dois que este servidor encosta —, e os de plataforma são `4`, `17`, `32` e `613`.
+  Como o token é único, quem compartilha o balde não são as pessoas logadas, e sim
+  as consultas ao mesmo ativo: várias pessoas puxando o mesmo cliente na mesma hora
+  é o caminho realista para o limite, não o volume total de uso.
 - Os dados dos últimos ~2 dias costumam voltar zerados: é a latência de consolidação
   do próprio Meta, não uma falha do servidor.

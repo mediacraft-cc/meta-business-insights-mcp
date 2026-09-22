@@ -37,9 +37,18 @@ export class GraphError extends Error {
     this.fbtraceId = body.fbtrace_id;
   }
 
-  /** Erros de limite de uso: vale esperar e tentar de novo. */
+  /**
+   * Erros de limite de uso: vale esperar e tentar de novo.
+   *
+   * Os 8000x são os limites por caso de uso (business use case), e cada um
+   * responde por um balde separado: 80000 Ads Insights, 80001 Pages, 80002
+   * Custom Audience, 80003/80004 Ads Management, 80005 Instagram. Os dois que
+   * este servidor realmente toca são 80001 e 80005 — Page Insights e
+   * Instagram Insights. Os demais ficam na lista porque a tool `graph_api_get`
+   * aceita qualquer caminho.
+   */
   get isRateLimit(): boolean {
-    return [4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004].includes(
+    return [4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005].includes(
       this.code ?? -1,
     );
   }
