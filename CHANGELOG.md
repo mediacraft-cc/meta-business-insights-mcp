@@ -5,6 +5,18 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 
+### Adicionado
+
+- **O medidor de cota do Meta virou mensagem de erro útil.** O header
+  `x-business-use-case-usage` já era capturado e nunca era lido. Agora ele é
+  parseado por ativo e caso de uso, e um erro de limite responde *quanto* falta
+  e *em quantos minutos* libera, em vez de só repassar `(#80005)`. Sem isso, a
+  reação natural de quem recebe o erro é tentar de novo — que é exatamente o que
+  não ajuda. O caminho da requisição começa pelo ID do nó, então o erro cita o
+  ativo que estourou, e não o pior do portfólio. A leitura passou a acontecer
+  nos três caminhos: `get`, `post` e `batchGet` — este último não olhava
+  cabeçalho nenhum.
+
 ### Corrigido
 
 - **O rate limit do Instagram (`80005`) não era reconhecido como rate limit.** A

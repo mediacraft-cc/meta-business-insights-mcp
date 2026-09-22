@@ -7,6 +7,8 @@
  * não o token do usuário/system user).
  */
 
+import { UsageTracker } from "./usage.js";
+
 export interface GraphErrorBody {
   message: string;
   type?: string;
@@ -90,8 +92,13 @@ function sleep(ms: number): Promise<void> {
 
 export class GraphClient {
   private readonly base: string;
-  /** Contadores de uso reportados pelo header x-business-use-case-usage. */
-  lastUsageHeader: string | undefined;
+
+  /**
+   * Contadores de uso reportados pelo Meta em toda resposta. É o que permite
+   * dizer "a cota deste ativo está em 100%, libera em ~12 min" em vez de só
+   * repassar o erro.
+   */
+  readonly usage = new UsageTracker();
 
   constructor(
     private readonly defaultToken: string,
@@ -99,6 +106,16 @@ export class GraphClient {
     host = "https://graph.facebook.com",
   ) {
     this.base = `${host}/${apiVersion}`;
+  }
+
+  /**
+   * Os medidores vêm em toda resposta, inclusive nas de erro — é justamente na
+   * de erro que interessam. Lidos aqui, num lugar só, para que nenhum caminho
+   * (GET, POST ou batch) deixe de alimentar o rastreador.
+   */
+  private readUsage(res: Response): void {
+    this.usage.record(res.headers.get("x-business-use-case-usage"));
+    this.usage.record(res.headers.get("x-app-usage"));
   }
 
   private buildUrl(path: string, params: Params, token: string): string {
@@ -144,8 +161,7 @@ export class GraphClient {
         continue;
       }
 
-      const usage = res.headers.get("x-business-use-case-usage");
-      if (usage) this.lastUsageHeader = usage;
+      this.readUsage(res);
 
       const text = await res.text();
       let json: unknown;
@@ -213,6 +229,7 @@ export class GraphClient {
         body: form.toString(),
         signal: opts.signal,
       });
+      this.readUsage(res);
 
       const text = await res.text();
       let json: unknown;
@@ -306,6 +323,7 @@ export class GraphClient {
         body,
         signal: opts.signal,
       });
+      this.readUsage(res);
 
       const outer = (await res.json()) as
         | Array<{ code: number; body: string } | null>

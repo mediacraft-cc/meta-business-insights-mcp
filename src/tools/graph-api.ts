@@ -45,7 +45,7 @@ export function registerGraphApiTools(server: McpServer, { client, portfolio }: 
           json.length > 60_000 ? `${json.slice(0, 60_000)}\n… (truncado)` : json;
         return text("```json\n" + truncated + "\n```", { data } as Record<string, unknown>);
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

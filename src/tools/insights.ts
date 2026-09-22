@@ -93,7 +93,7 @@ export function registerInsightTools(
           },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
@@ -155,7 +155,7 @@ export function registerInsightTools(
           },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

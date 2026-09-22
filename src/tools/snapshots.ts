@@ -5,7 +5,7 @@ import { captureSnapshot } from "../storage/snapshot.js";
 import { markdownTable } from "../lib/format.js";
 import { assetsSchema, fail, sinceSchema, text, untilSchema, type ToolDeps } from "./shared.js";
 
-export function registerSnapshotTools(server: McpServer, { portfolio, store }: ToolDeps): void {
+export function registerSnapshotTools(server: McpServer, { client, portfolio, store }: ToolDeps): void {
   server.registerTool(
     "save_followers_snapshot",
     {
@@ -28,7 +28,7 @@ export function registerSnapshotTools(server: McpServer, { portfolio, store }: T
           { ...result },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
@@ -68,7 +68,7 @@ export function registerSnapshotTools(server: McpServer, { portfolio, store }: T
           { snapshots, file: store.path },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

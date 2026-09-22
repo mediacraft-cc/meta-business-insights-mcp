@@ -65,7 +65,7 @@ export function registerFollowerTools(
           total,
         });
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
@@ -198,7 +198,7 @@ export function registerFollowerTools(
           issues: result.issues,
         });
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

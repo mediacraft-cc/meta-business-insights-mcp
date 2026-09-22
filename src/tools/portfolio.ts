@@ -4,7 +4,7 @@ import * as z from "zod/v4";
 import { issuesBlock, markdownTable } from "../lib/format.js";
 import { assetLine, fail, sum, text, type ToolDeps } from "./shared.js";
 
-export function registerPortfolioTools(server: McpServer, { portfolio }: ToolDeps): void {
+export function registerPortfolioTools(server: McpServer, { client, portfolio }: ToolDeps): void {
   server.registerTool(
     "list_portfolio",
     {
@@ -65,7 +65,7 @@ export function registerPortfolioTools(server: McpServer, { portfolio }: ToolDep
           warnings: result.warnings,
         });
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

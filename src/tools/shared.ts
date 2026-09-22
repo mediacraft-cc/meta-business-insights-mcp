@@ -8,6 +8,7 @@ import * as z from "zod/v4";
 import type { Config } from "../config.js";
 import { redactDeep, redactText } from "../lib/redact.js";
 import { GraphError, type GraphClient } from "../meta/client.js";
+import { describeUsage } from "../meta/usage.js";
 import type { PageAsset, PortfolioService } from "../meta/assets.js";
 import type { SnapshotStore } from "../storage/store.js";
 
@@ -57,7 +58,7 @@ export function text(body: string, structured?: Record<string, unknown>) {
   };
 }
 
-export function fail(err: unknown) {
+export function fail(err: unknown, client?: GraphClient) {
   const message =
     err instanceof GraphError
       ? `${err.message}${err.fbtraceId ? ` [fbtrace_id: ${err.fbtraceId}]` : ""}`
@@ -67,9 +68,35 @@ export function fail(err: unknown) {
   // A Graph API às vezes ecoa a URL da chamada na mensagem de erro — e a URL
   // carrega o token.
   return {
-    content: [{ type: "text" as const, text: redactText(`Erro: ${message}`) }],
+    content: [
+      { type: "text" as const, text: redactText(`Erro: ${message}${quotaHint(err, client)}`) },
+    ],
     isError: true,
   };
+}
+
+/**
+ * Traduz "erro 80005" em algo acionável.
+ *
+ * Sem isto, o modelo do outro lado só sabe que falhou — e a reação natural é
+ * tentar de novo, que é exatamente o que não ajuda. Com o medidor, ele sabe
+ * quanto falta e pode pedir ao usuário que espere o tempo certo.
+ */
+function quotaHint(err: unknown, client?: GraphClient): string {
+  if (!client || !(err instanceof GraphError) || !err.isRateLimit) return "";
+
+  // O caminho começa pelo ID do nó, então dá para citar o ativo que estourou em
+  // vez do pior do portfólio. Se a leitura daquele ativo estiver velha ou
+  // faltando, o pior do portfólio ainda é uma pista melhor que nenhuma.
+  const usage = client.usage.forPath(err.path)[0] ?? client.usage.worst();
+  const medida = usage ? ` ${describeUsage(usage)}` : "";
+
+  return (
+    `\n\nLimite de uso do Meta.${medida}` +
+    " O balde é por ativo e por caso de uso, e o token é um só: consultas de" +
+    " várias pessoas ao mesmo ativo dividem a mesma cota. Repetir agora não" +
+    " ajuda — espere os minutos indicados, ou consulte outro ativo enquanto isso."
+  );
 }
 
 export function assetLine(page: PageAsset): string {

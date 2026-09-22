@@ -116,7 +116,7 @@ export function registerCommentTools(
           },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
@@ -192,7 +192,7 @@ export function registerCommentTools(
           { published: true, surface, commentId, replyId: result.id, message },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
@@ -229,7 +229,7 @@ export function registerCommentTools(
           { commentId, hidden, surface },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );

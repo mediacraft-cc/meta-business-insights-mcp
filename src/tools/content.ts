@@ -96,7 +96,7 @@ export function registerContentTools(server: McpServer, { client, portfolio }: T
           { since: range.since, until: range.until, sortBy, count: rows.length, posts: top },
         );
       } catch (err) {
-        return fail(err);
+        return fail(err, client);
       }
     },
   );
