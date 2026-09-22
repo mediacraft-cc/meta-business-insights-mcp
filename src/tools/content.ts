@@ -73,7 +73,7 @@ export function registerContentTools(
           limit,
         });
 
-        return await served(cache, key, windowTtl(range.until), async () => {
+        return await served(cache, client, key, windowTtl(range.until), async () => {
           const { rows, issues } = await fetchContent(client, pages, range, surfaces);
 
           const valueOf = (row: (typeof rows)[number]) =>

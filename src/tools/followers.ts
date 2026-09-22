@@ -42,7 +42,7 @@ export function registerFollowerTools(
           date: today(),
         });
 
-        return await served(cache, key, windowTtl(today()), async () => {
+        return await served(cache, client, key, windowTtl(today()), async () => {
           const rows: Array<[string, string, string, number | null]> = [];
           for (const page of pages) {
             rows.push(["Facebook", page.name, page.id, page.followersCount ?? null]);
@@ -117,7 +117,7 @@ export function registerFollowerTools(
           consolidate,
         });
 
-        return await served(cache, key, windowTtl(range.until), async () => {
+        return await served(cache, client, key, windowTtl(range.until), async () => {
           const result = await fetchFollowerSeries(
             client,
             pages,

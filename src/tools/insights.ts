@@ -83,7 +83,7 @@ export function registerInsightTools(
           ...range,
         });
 
-        return await served(cache, key, windowTtl(range.until), async () => {
+        return await served(cache, client, key, windowTtl(range.until), async () => {
           const result = await fetchPageInsights(
             client,
             pages,
@@ -147,7 +147,7 @@ export function registerInsightTools(
           ...range,
         });
 
-        return await served(cache, key, windowTtl(range.until), async () => {
+        return await served(cache, client, key, windowTtl(range.until), async () => {
           const result = await fetchInstagramInsights(
             client,
             pages,

@@ -636,6 +636,8 @@ Tudo abaixo foi verificado contra a API real na v26, não só lido na documenta�
 - Respostas das tools caras ficam em cache: 6 horas para janela que o Meta já
   consolidou (não muda mais), 10 minutos para janela que ainda toca hoje. A
   resposta vinda do cache diz isso na própria saída.
+- Se a cota estourar e houver uma resposta guardada, ela é devolvida com a data
+  e o tempo que falta para liberar, em vez de um erro.
 - Rate limit tem retry com backoff exponencial. Os limites por caso de uso são
   baldes separados por ativo — `80001` para Pages e `80005` para Instagram são os
   dois que este servidor encosta —, e os de plataforma são `4`, `17`, `32` e `613`.

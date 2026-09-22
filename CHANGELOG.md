@@ -31,6 +31,15 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   token do Meta é um só e todo mundo vê o mesmo portfólio, então a resposta de
   um serve ao outro. Erro nunca é guardado.
 
+- **Cota estourada com resposta velha na mão devolve a velha, datada**, em vez
+  de um erro. O backoff dá ~35s de espera, mas o `estimated_time_to_regain_access`
+  do Meta costuma vir em minutos a uma hora — ou seja, no cenário real de
+  contenção a requisição ia falhar de qualquer jeito. A resposta guardada diz
+  de quando é e em quantos minutos libera, e o modelo do outro lado consegue
+  responder ao usuário em vez de só repassar a falha. Vale só para erro de
+  limite: métrica inválida continua subindo como erro, porque esconder isso
+  atrás de um número velho mandaria o usuário para o caminho errado.
+
 ### Corrigido
 
 - **O rate limit do Instagram (`80005`) não era reconhecido como rate limit.** A
@@ -54,7 +63,7 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   usa, header quebrado virando lista vazia em vez de exceção, amostra velha
   sendo esquecida, chave de cache estável, os dois TTLs e a fronteira entre
   eles, despejo por idade, e a mensagem de erro citando o ativo certo. A suíte
-  foi de 48 para 84 casos.
+  foi de 48 para 87 casos.
 
 ## [0.3.1] — 2026-09-17
 

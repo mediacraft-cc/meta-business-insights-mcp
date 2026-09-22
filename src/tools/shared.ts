@@ -45,6 +45,7 @@ export interface ToolResult {
  */
 export async function served(
   cache: ResponseCache,
+  client: GraphClient,
   key: string,
   ttlMs: number,
   produce: () => Promise<ToolResult>,
@@ -58,9 +59,33 @@ export async function served(
     );
   }
 
-  const result = await produce();
-  if (!result.isError) cache.set(key, result, ttlMs);
-  return result;
+  try {
+    const result = await produce();
+    cache.set(key, result, ttlMs);
+    return result;
+  } catch (err) {
+    // Cota estourada com uma resposta velha na mão: um número datado vale mais
+    // que um erro. O TTL vencido não apaga a entrada justamente para isto.
+    if (hit && err instanceof GraphError && err.isRateLimit) {
+      const usage = client.usage.forPath(err.path)[0] ?? client.usage.worst();
+      const volta =
+        usage && usage.regainAccessInMinutes > 0
+          ? ` Libera em ~${Math.ceil(usage.regainAccessInMinutes)} min — peça de novo depois disso para o número fresco.`
+          : " Peça de novo em alguns minutos para o número fresco.";
+
+      return withCacheNote(
+        hit.value,
+        `_Dado de ${ageLabel(Date.now() - hit.at)} atrás, servido porque a cota do Meta para este ativo está estourada.${volta}_`,
+        {
+          hit: true,
+          at: new Date(hit.at).toISOString(),
+          stale: true,
+          regainAccessInMinutes: usage?.regainAccessInMinutes ?? null,
+        },
+      );
+    }
+    throw err;
+  }
 }
 
 /** "3 min" / "2 h" — precisão suficiente para decidir se vale repetir. */
