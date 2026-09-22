@@ -17,6 +17,20 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   nos três caminhos: `get`, `post` e `batchGet` — este último não olhava
   cabeçalho nenhum.
 
+- **Cache de resposta nas tools caras** (`page_insights`, `instagram_insights`,
+  `content_insights`, `followers_overview`, `followers_timeseries`). O TTL não é
+  um número só: janela que o Meta já consolidou (fim há mais de ~2 dias) vale 6
+  horas, porque o resultado não muda mais; janela que ainda toca hoje vale 10
+  minutos. O relatório de "mês passado" — o pedido caro e repetido — cai inteiro
+  no TTL longo, e o "como estamos hoje" continua praticamente ao vivo. Resposta
+  do cache é marcada como tal, no texto e no `structuredContent`.
+- A chave é montada **depois** de resolver ativos e intervalo: `@usuario` e
+  `17841…` são o mesmo ativo, e `since` ausente significa uma data que muda de
+  um dia para o outro. É o que decide se o cache tem acerto útil ou nenhum.
+  Fica na memória do processo, compartilhado entre as pessoas conectadas — o
+  token do Meta é um só e todo mundo vê o mesmo portfólio, então a resposta de
+  um serve ao outro. Erro nunca é guardado.
+
 ### Corrigido
 
 - **O rate limit do Instagram (`80005`) não era reconhecido como rate limit.** A
@@ -29,13 +43,18 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   pessoas consultando o mesmo cliente na mesma hora — e é justamente aí que a
   espera fazia falta.
 
-### Adicionado
+### Testes
 
-- **Testes do classificador de erro da Graph API**: cobrem os dois baldes usados
+- **Do classificador de erro da Graph API**: cobrem os dois baldes usados
   (`80001` Pages, `80005` Instagram), os limites de plataforma e os erros que
   **não** podem ser confundidos com limite — o `(#100)` de métrica inválida e o
   `190` de token expirado repetem igual para sempre, e retentar só gasta a cota
-  que o backoff existe para poupar. São os casos 49 a 52 da suíte.
+  que o backoff existe para poupar.
+- **Do medidor de cota e do cache**: parser do header nas duas formas que o Meta
+  usa, header quebrado virando lista vazia em vez de exceção, amostra velha
+  sendo esquecida, chave de cache estável, os dois TTLs e a fronteira entre
+  eles, despejo por idade, e a mensagem de erro citando o ativo certo. A suíte
+  foi de 48 para 84 casos.
 
 ## [0.3.1] — 2026-09-17
 

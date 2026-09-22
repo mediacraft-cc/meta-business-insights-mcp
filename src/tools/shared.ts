@@ -6,6 +6,7 @@
 import * as z from "zod/v4";
 
 import type { Config } from "../config.js";
+import type { ResponseCache } from "../lib/cache.js";
 import { redactDeep, redactText } from "../lib/redact.js";
 import { GraphError, type GraphClient } from "../meta/client.js";
 import { describeUsage } from "../meta/usage.js";
@@ -21,6 +22,77 @@ export interface ToolDeps {
   client: GraphClient;
   portfolio: PortfolioService;
   store: SnapshotStore;
+  cache: ResponseCache;
+}
+
+/**
+ * Formato de saída de toda tool. O índice aberto é o do `CallToolResult` do
+ * SDK: sem ele, este tipo não é aceito no lugar do retorno esperado.
+ */
+export interface ToolResult {
+  [key: string]: unknown;
+  content: Array<{ type: "text"; text: string }>;
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+}
+
+/**
+ * Responde do cache quando a mesma pergunta já foi feita.
+ *
+ * A chave tem que vir pronta de quem chama, e depois de resolver ativos e
+ * intervalo — ver `cacheKey`. Erro nunca é guardado: um limite de um minuto
+ * viraria dez minutos de erro repetido.
+ */
+export async function served(
+  cache: ResponseCache,
+  key: string,
+  ttlMs: number,
+  produce: () => Promise<ToolResult>,
+): Promise<ToolResult> {
+  const hit = cache.get<ToolResult>(key);
+  if (hit?.fresh) {
+    return withCacheNote(
+      hit.value,
+      `_Resposta do cache, de ${ageLabel(Date.now() - hit.at)}. Os números do Meta só consolidam depois de ~2 dias, então repetir a consulta agora devolveria o mesmo._`,
+      { hit: true, at: new Date(hit.at).toISOString(), stale: false },
+    );
+  }
+
+  const result = await produce();
+  if (!result.isError) cache.set(key, result, ttlMs);
+  return result;
+}
+
+/** "3 min" / "2 h" — precisão suficiente para decidir se vale repetir. */
+export function ageLabel(ms: number): string {
+  const minutos = Math.round(ms / 60_000);
+  if (minutos < 1) return "menos de 1 min";
+  if (minutos < 60) return `${minutos} min`;
+  return `${Math.round(minutos / 6) / 10} h`;
+}
+
+/**
+ * Acrescenta a procedência à resposta guardada. Vai no texto **e** no
+ * `structuredContent`: o texto é o que o modelo lê para avisar o usuário, o
+ * campo é o que dá para conferir sem interpretar prosa.
+ */
+function withCacheNote(
+  result: ToolResult,
+  note: string,
+  meta: Record<string, unknown>,
+): ToolResult {
+  const content = result.content.map((block, i) =>
+    i === result.content.length - 1
+      ? { ...block, text: `${block.text}\n\n${note}` }
+      : block,
+  );
+  return {
+    ...result,
+    content,
+    ...(result.structuredContent
+      ? { structuredContent: { ...result.structuredContent, cache: meta } }
+      : {}),
+  };
 }
 
 export const granularitySchema = z

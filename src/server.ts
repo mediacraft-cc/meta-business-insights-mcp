@@ -18,6 +18,7 @@ import { loadConfig } from "./config.js";
 import { GraphClient } from "./meta/client.js";
 import { PortfolioService } from "./meta/assets.js";
 import { SnapshotStore } from "./storage/store.js";
+import { ResponseCache } from "./lib/cache.js";
 import type { ToolDeps } from "./tools/shared.js";
 import { registerPortfolioTools } from "./tools/portfolio.js";
 import { registerFollowerTools } from "./tools/followers.js";
@@ -42,6 +43,11 @@ const deps: ToolDeps = {
   client,
   portfolio: new PortfolioService(client, config.businessId, config.pageIdFilter),
   store: new SnapshotStore(config.dataDir),
+  // Compartilhado entre todas as pessoas conectadas, e isso é intencional: o
+  // token do Meta é um só e todo mundo enxerga o mesmo portfólio, então a
+  // resposta de um serve ao outro. Se um dia houver recorte por cliente, a
+  // identidade tem que entrar na chave — senão isto vira vazamento.
+  cache: new ResponseCache(),
 };
 
 export interface ServerOptions {

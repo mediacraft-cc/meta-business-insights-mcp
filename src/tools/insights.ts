@@ -11,9 +11,11 @@ import { aggregate, withDeltas, type GroupDimension } from "../meta/aggregate.js
 import { resolveRange, type Granularity } from "../lib/dates.js";
 import { IG_METRICS, PAGE_DEPRECATIONS, PAGE_METRICS, checkDeprecated } from "../meta/metrics.js";
 import { formatPct, formatSigned, issuesBlock, markdownTable, section } from "../lib/format.js";
+import { cacheKey, windowTtl } from "../lib/cache.js";
 import {
   assetsSchema,
   fail,
+  served,
   granularitySchema,
   labelOf,
   sinceSchema,
@@ -47,7 +49,7 @@ const insightsInput = z.object({
 
 export function registerInsightTools(
   server: McpServer,
-  { config, client, portfolio }: ToolDeps,
+  { config, client, portfolio, cache }: ToolDeps,
 ): void {
   server.registerTool(
     "page_insights",
@@ -72,26 +74,37 @@ export function registerInsightTools(
           .map((m) => checkDeprecated(m, "page"))
           .filter(Boolean) as string[];
 
-        const result = await fetchPageInsights(
-          client,
-          pages,
-          { metrics: input.metrics, ...range, period: input.period },
-          config.accessToken,
-        );
+        // A chave sai dos ativos já resolvidos e do intervalo já absoluto —
+        // `@usuario` e `since` ausente virariam chaves diferentes para a mesma
+        // pergunta.
+        const key = cacheKey("page_insights", {
+          ...input,
+          assets: pages.map((p) => p.id).sort(),
+          ...range,
+        });
 
-        return text(
-          renderInsights(result.series, result.issues, input, range, notes),
-          {
-            range,
-            rows: aggregate(result.series, {
-              granularity: input.granularity as Granularity,
-              groupBy: input.groupBy as GroupDimension[],
-              aggregation: input.aggregation,
-            }),
-            issues: result.issues,
-            deprecationNotes: notes,
-          },
-        );
+        return await served(cache, key, windowTtl(range.until), async () => {
+          const result = await fetchPageInsights(
+            client,
+            pages,
+            { metrics: input.metrics, ...range, period: input.period },
+            config.accessToken,
+          );
+
+          return text(
+            renderInsights(result.series, result.issues, input, range, notes),
+            {
+              range,
+              rows: aggregate(result.series, {
+                granularity: input.granularity as Granularity,
+                groupBy: input.groupBy as GroupDimension[],
+                aggregation: input.aggregation,
+              }),
+              issues: result.issues,
+              deprecationNotes: notes,
+            },
+          );
+        });
       } catch (err) {
         return fail(err, client);
       }
@@ -128,32 +141,40 @@ export function registerInsightTools(
           .map((m) => checkDeprecated(m, "instagram"))
           .filter(Boolean) as string[];
 
-        const result = await fetchInstagramInsights(
-          client,
-          pages,
-          {
-            metrics: input.metrics,
-            ...range,
-            granularity: input.granularity as Granularity,
-            breakdown: input.breakdown,
-            timeframe: input.timeframe,
-          },
-          config.accessToken,
-        );
+        const key = cacheKey("instagram_insights", {
+          ...input,
+          assets: pages.map((p) => p.id).sort(),
+          ...range,
+        });
 
-        return text(
-          renderInsights(result.series, result.issues, input, range, notes),
-          {
-            range,
-            rows: aggregate(result.series, {
+        return await served(cache, key, windowTtl(range.until), async () => {
+          const result = await fetchInstagramInsights(
+            client,
+            pages,
+            {
+              metrics: input.metrics,
+              ...range,
               granularity: input.granularity as Granularity,
-              groupBy: input.groupBy as GroupDimension[],
-              aggregation: input.aggregation,
-            }),
-            issues: result.issues,
-            deprecationNotes: notes,
-          },
-        );
+              breakdown: input.breakdown,
+              timeframe: input.timeframe,
+            },
+            config.accessToken,
+          );
+
+          return text(
+            renderInsights(result.series, result.issues, input, range, notes),
+            {
+              range,
+              rows: aggregate(result.series, {
+                granularity: input.granularity as Granularity,
+                groupBy: input.groupBy as GroupDimension[],
+                aggregation: input.aggregation,
+              }),
+              issues: result.issues,
+              deprecationNotes: notes,
+            },
+          );
+        });
       } catch (err) {
         return fail(err, client);
       }

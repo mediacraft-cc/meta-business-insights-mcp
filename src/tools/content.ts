@@ -5,7 +5,16 @@ import { fetchContent } from "../meta/content.js";
 import { resolveRange } from "../lib/dates.js";
 import { MS_METRICS } from "../meta/metrics.js";
 import { issuesBlock, markdownTable } from "../lib/format.js";
-import { assetsSchema, fail, sinceSchema, text, untilSchema, type ToolDeps } from "./shared.js";
+import { cacheKey, windowTtl } from "../lib/cache.js";
+import {
+  assetsSchema,
+  fail,
+  served,
+  sinceSchema,
+  text,
+  untilSchema,
+  type ToolDeps,
+} from "./shared.js";
 
 /**
  * Colunas comparáveis entre Facebook e Instagram. A ordem aqui é a ordem da
@@ -20,7 +29,10 @@ const NORMALIZED_COLUMNS: Record<string, string> = {
   interactions: "Interações",
 };
 
-export function registerContentTools(server: McpServer, { client, portfolio }: ToolDeps): void {
+export function registerContentTools(
+  server: McpServer,
+  { client, portfolio, cache }: ToolDeps,
+): void {
   server.registerTool(
     "content_insights",
     {
@@ -53,48 +65,58 @@ export function registerContentTools(server: McpServer, { client, portfolio }: T
       try {
         const pages = await portfolio.resolveTargets(assets);
         const range = resolveRange(since, until, 90);
-        const { rows, issues } = await fetchContent(client, pages, range, surfaces);
+        const key = cacheKey("content_insights", {
+          assets: pages.map((p) => p.id).sort(),
+          ...range,
+          surfaces,
+          sortBy,
+          limit,
+        });
 
-        const valueOf = (row: (typeof rows)[number]) =>
-          row.normalized[sortBy] ?? row.raw[sortBy] ?? -1;
-        const top = [...rows].sort((a, b) => valueOf(b) - valueOf(a)).slice(0, limit);
+        return await served(cache, key, windowTtl(range.until), async () => {
+          const { rows, issues } = await fetchContent(client, pages, range, surfaces);
 
-        const extra = sortBy in NORMALIZED_COLUMNS ? [] : [sortBy];
-        const headers = [
-          "Data",
-          "Rede",
-          "Ativo",
-          "Tipo",
-          "Publicação",
-          ...Object.values(NORMALIZED_COLUMNS),
-          ...extra.map(metricLabel),
-        ];
+          const valueOf = (row: (typeof rows)[number]) =>
+            row.normalized[sortBy] ?? row.raw[sortBy] ?? -1;
+          const top = [...rows].sort((a, b) => valueOf(b) - valueOf(a)).slice(0, limit);
 
-        const table = top.map((row) => [
-          row.date,
-          row.surface === "facebook" ? "FB" : "IG",
-          row.assetName,
-          row.type,
-          snippet(row.caption),
-          ...Object.keys(NORMALIZED_COLUMNS).map((k) => row.normalized[k] ?? null),
-          ...extra.map((k) => formatMetric(k, row.raw[k])),
-        ]);
+          const extra = sortBy in NORMALIZED_COLUMNS ? [] : [sortBy];
+          const headers = [
+            "Data",
+            "Rede",
+            "Ativo",
+            "Tipo",
+            "Publicação",
+            ...Object.values(NORMALIZED_COLUMNS),
+            ...extra.map(metricLabel),
+          ];
 
-        const head =
-          `**Publicações** · ${range.since} → ${range.until} · ordenado por ${sortBy} · ` +
-          `${rows.length} no período (exibindo ${top.length})`;
+          const table = top.map((row) => [
+            row.date,
+            row.surface === "facebook" ? "FB" : "IG",
+            row.assetName,
+            row.type,
+            snippet(row.caption),
+            ...Object.keys(NORMALIZED_COLUMNS).map((k) => row.normalized[k] ?? null),
+            ...extra.map((k) => formatMetric(k, row.raw[k])),
+          ]);
 
-        return text(
-          `${head}\n\n${markdownTable(headers, table)}` +
-            issuesBlock(
-              issues.map((i) => ({
-                assetName: i.asset,
-                surface: "conteúdo",
-                message: i.detail,
-              })),
-            ),
-          { since: range.since, until: range.until, sortBy, count: rows.length, posts: top },
-        );
+          const head =
+            `**Publicações** · ${range.since} → ${range.until} · ordenado por ${sortBy} · ` +
+            `${rows.length} no período (exibindo ${top.length})`;
+
+          return text(
+            `${head}\n\n${markdownTable(headers, table)}` +
+              issuesBlock(
+                issues.map((i) => ({
+                  assetName: i.asset,
+                  surface: "conteúdo",
+                  message: i.detail,
+                })),
+              ),
+            { since: range.since, until: range.until, sortBy, count: rows.length, posts: top },
+          );
+        });
       } catch (err) {
         return fail(err, client);
       }
