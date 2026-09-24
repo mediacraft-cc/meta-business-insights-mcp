@@ -42,6 +42,14 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 ### Corrigido
 
+- **O batch não tinha retry nenhum.** O `batchGet` fazia `fetch` direto, fora do
+  laço de tentativas, então um 503 ou um rate limit no envelope derrubava de uma
+  vez as até 50 operações — e é por aí que passa quase todo o tráfego do
+  servidor. Agora ele usa o mesmo backoff do `get`, o que é seguro porque toda
+  operação dentro do batch é um GET: repetir não publica nada duas vezes, ao
+  contrário do `post`, que segue sem retry em falha ambígua. Erro de uma
+  operação isolada continua voltando por operação, sem derrubar as demais.
+
 - **O rate limit do Instagram (`80005`) não era reconhecido como rate limit.** A
   lista em `isRateLimit` ia de `80000` a `80004` e parava ali — mas `80005` é o
   balde do Instagram, e `80002`/`80003`/`80004` são Custom Audience e Ads
@@ -63,7 +71,11 @@ Versionamento [SemVer](https://semver.org/lang/pt-BR/).
   usa, header quebrado virando lista vazia em vez de exceção, amostra velha
   sendo esquecida, chave de cache estável, os dois TTLs e a fronteira entre
   eles, despejo por idade, e a mensagem de erro citando o ativo certo. A suíte
-  foi de 48 para 87 casos.
+  foi de 48 para 94 casos.
+- **Do laço de retry**, com `fetch` e espera substituídos: confere que o batch
+  retenta em 5xx e em rate limit com as esperas certas, que desiste na quarta
+  tentativa, que não retenta erro permanente — e que o `post` continua **não**
+  retentando em 5xx, que é a garantia de não publicar comentário duplicado.
 
 ## [0.3.1] — 2026-09-17
 

@@ -126,8 +126,10 @@ Os testes ficam ao lado do módulo que exercitam (`dates.test.ts` junto de
 `dates.ts`), usam o runner embutido do Node (`node:test`, sem dependência
 nova) e não tocam na rede: cobrem as janelas de data, a agregação
 cross-account, a formatação das tabelas, a redação de segredos, o catálogo de
-métricas e o histórico em disco. O que fala com a Graph API continua sendo
-verificado pelo `npm run probe`, que usa o token de verdade.
+métricas e o histórico em disco. Os do cliente da Graph API substituem o
+`fetch` e a espera do backoff por dublês, então conferem a política de retry em
+milissegundos. O que fala com a API de verdade continua sendo verificado pelo
+`npm run probe`, que usa o token real.
 
 ## Configuração no Claude Desktop (modo stdio)
 
@@ -638,7 +640,9 @@ Tudo abaixo foi verificado contra a API real na v26, não só lido na documenta�
   resposta vinda do cache diz isso na própria saída.
 - Se a cota estourar e houver uma resposta guardada, ela é devolvida com a data
   e o tempo que falta para liberar, em vez de um erro.
-- Rate limit tem retry com backoff exponencial. Os limites por caso de uso são
+- Rate limit tem retry com backoff exponencial, inclusive no batch — cujas
+  operações são todas GET, então repetir é seguro. A escrita (`post`) só retenta
+  em rate limit, nunca em falha ambígua, para não publicar duas vezes. Os limites por caso de uso são
   baldes separados por ativo — `80001` para Pages e `80005` para Instagram são os
   dois que este servidor encosta —, e os de plataforma são `4`, `17`, `32` e `613`.
   Como o token é único, quem compartilha o balde não são as pessoas logadas, e sim

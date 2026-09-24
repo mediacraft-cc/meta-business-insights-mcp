@@ -104,6 +104,8 @@ export class GraphClient {
     private readonly defaultToken: string,
     readonly apiVersion: string,
     host = "https://graph.facebook.com",
+    /** Injetável para o teste exercitar o backoff sem esperar de verdade. */
+    private readonly waitMs: (ms: number) => Promise<void> = sleep,
   ) {
     this.base = `${host}/${apiVersion}`;
   }
@@ -145,19 +147,32 @@ export class GraphClient {
     path: string,
     signal?: AbortSignal,
   ): Promise<T> {
+    return this.sendWithRetry(path, () =>
+      fetch(url, { headers: { Accept: "application/json" }, signal }),
+    ) as Promise<T>;
+  }
+
+  /**
+   * O laço de tentativas, compartilhado por tudo que pode ser repetido sem
+   * risco: o GET e o batch (cujas operações são todas GET).
+   *
+   * Recebe a função que dispara o request em vez da URL porque o batch é um
+   * POST com corpo — a forma do envio muda, a política de espera não.
+   */
+  private async sendWithRetry(
+    path: string,
+    send: () => Promise<Response>,
+  ): Promise<unknown> {
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       let res: Response;
       try {
-        res = await fetch(url, {
-          headers: { Accept: "application/json" },
-          signal,
-        });
+        res = await send();
       } catch (err) {
         lastError = err;
         if (attempt === MAX_ATTEMPTS) break;
-        await sleep(500 * 2 ** (attempt - 1));
+        await this.waitMs(500 * 2 ** (attempt - 1));
         continue;
       }
 
@@ -173,7 +188,7 @@ export class GraphClient {
         );
       }
 
-      if (res.ok) return json as T;
+      if (res.ok) return json;
 
       const body = (json as { error?: GraphErrorBody }).error ?? {
         message: text.slice(0, 300),
@@ -186,7 +201,7 @@ export class GraphClient {
 
       // Rate limit do Meta costuma exigir espera maior que um 5xx comum.
       const baseDelay = error.isRateLimit ? 5_000 : 700;
-      await sleep(baseDelay * 2 ** (attempt - 1));
+      await this.waitMs(baseDelay * 2 ** (attempt - 1));
     }
 
     throw lastError instanceof Error
@@ -248,7 +263,7 @@ export class GraphClient {
       };
       const error = new GraphError(res.status, path, errBody);
       if (!error.isRateLimit || attempt === 3) throw error;
-      await sleep(5_000 * 2 ** (attempt - 1));
+      await this.waitMs(5_000 * 2 ** (attempt - 1));
     }
 
     throw new Error(`Falha ao escrever em ${path}`);
@@ -317,20 +332,21 @@ export class GraphClient {
         batch: JSON.stringify(payload),
       });
 
-      const res = await fetch(`${this.base}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        signal: opts.signal,
-      });
-      this.readUsage(res);
-
-      const outer = (await res.json()) as
-        | Array<{ code: number; body: string } | null>
-        | { error?: GraphErrorBody };
+      // Com retry, ao contrário do `post`: o batch é um POST no transporte,
+      // mas toda operação dentro dele é GET, então repetir não publica nada
+      // duas vezes. Sem isto, um 503 no envelope derrubava de uma vez as 50
+      // operações — e é por aqui que passa quase todo o tráfego do servidor.
+      const outer = (await this.sendWithRetry("batch", () =>
+        fetch(`${this.base}/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body,
+          signal: opts.signal,
+        }),
+      )) as Array<{ code: number; body: string } | null> | { error?: GraphErrorBody };
 
       if (!Array.isArray(outer)) {
-        throw new GraphError(res.status, "batch", outer.error ?? {
+        throw new GraphError(200, "batch", (outer as { error?: GraphErrorBody }).error ?? {
           message: "Resposta de batch inesperada",
         });
       }
